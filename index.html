@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,uesr-scalable=no">
+	<meta name="format-detection" content="telphone=no,email=no,address=no">
+	<meta http-equiv="X-UA-compatible" content="IE=edge chrome=1">
+	<title>Document</title>
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/reset.css">
+	<style>
+	#box{
+		width: 1000px;
+	}
+	#clocks,#box{
+		background: rgba(0,0,0,.8);
+	}
+	#clocks{
+		float: left;
+	}
+	#wrap{
+		float: right;
+	}
+	*{margin:0;padding:0;list-style: none}
+	#wrap{width: 300px;height: 350px;border:1px solid #f06;margin:100px auto;}
+	#wrap button{width:65px}
+	#wrap #title{width: 300px;height: 30px;text-align: center;line-height: 30px;color:#f06;font-size:26px;}
+	#wrap ul>li{background: skyblue}
+	#wrap  li{float: left;width: 41px;height: 41px;border:1px solid #000;text-align: center;line-height: 41px;}
+	</style>
+</head>
+<body>
+<div id="box">
+	<canvas id="clocks" width="600" height="500">
+	
+	</canvas>
+	<div id="wrap">
+		<button>上个月</button>
+		<button>下个月</button>
+		<button>上一年</button>
+		<button>下一年</button>
+		<div id="title"></div>
+		<ul>
+			<li>日</li>
+			<li>一</li>
+			<li>二</li>
+			<li>三</li>
+			<li>四</li>
+			<li>五</li>
+			<li>六</li>
+		</ul>
+		<ol id="list">
+			
+		</ol>
+	</div>
+</div>
+</body>
+</html>
+<script>
+	var clocksCtx=document.getElementById("clocks").getContext("2d"),
+		deg = Math.PI / 180;
+	clocksCtx.translate(300,200);//更改画布的原点位置
+	//两个函数
+	drawDail();//绘制表盘 不动的
+	drawClock();//绘制表针 动的
+	function drawDail(){
+		clocksCtx.clearRect(-300,-200,600,500);//清除
+
+		
+		//保存
+		clocksCtx.save();
+		//表盘 添加渐变背景
+		clocksCtx.beginPath();
+		//线性渐变 
+		var gra = clocksCtx.createLinearGradient(0,0,0,-120);//渐变对象
+			gra.addColorStop(0,'#fff');//开始
+			gra.addColorStop(1,'pink');//结束
+			clocksCtx.fillStyle=gra;// 填充的颜色
+		//边框背景
+		var gra2 = clocksCtx.createLinearGradient(-50,-150,50,150);//渐变对象
+			gra2.addColorStop(0,'#eee');//开始
+			gra2.addColorStop(1,'#f06');//结束
+			clocksCtx.strokeStyle=gra2;// 填充的颜色
+		//设置阴影
+		clocksCtx.shadowOffsetX=-5;//x轴
+		clocksCtx.shadowOffsetY=5;//y轴
+		clocksCtx.shadowBlur=5;//模糊程度
+		clocksCtx.shadowColor=" rgba(0,0,0,.7)";//阴影颜色
+		clocksCtx.lineWidth=20;//边框粗细
+		clocksCtx.arc(0,0,150,0,360*deg,true);//绘制圆
+		clocksCtx.fill();
+		clocksCtx.stroke();
+		clocksCtx.restore();//恢复
+		//画刻度 
+		for(let i=1;i<=60;i++){
+			clocksCtx.rotate(6*deg)
+			if(i%15 == 0){
+				clocksCtx.beginPath();//开始新路径
+				clocksCtx.strokeStyle="#f06";
+				clocksCtx.lineWidth=3;
+				clocksCtx.moveTo(0,-140);//  12 点方向
+				clocksCtx.lineTo(0,-120);
+				clocksCtx.stroke();
+			}else if(i%5==0){
+				clocksCtx.beginPath();//开始新路径
+				clocksCtx.strokeStyle="#000";
+				clocksCtx.lineWidth=2;
+				clocksCtx.moveTo(0,-140);//  12 点方向
+				clocksCtx.lineTo(0,-120);
+				clocksCtx.stroke();
+
+			}else{
+				clocksCtx.beginPath();//开始新路径
+				clocksCtx.strokeStyle="#000";
+				clocksCtx.moveTo(0,-140);//  12 点方向
+				clocksCtx.lineTo(0,-130);
+				clocksCtx.stroke();
+			}
+
+		}
+		clocksCtx.restore();
+	//写数字
+	clocksCtx.beginPath();
+	clocksCtx.fillStyle="black";
+	clocksCtx.font="20px 微软雅黑";
+	clocksCtx.fillText("12",-8,-100);
+	clocksCtx.fillText("6",-8,100);
+	clocksCtx.fillText("3",100,10);
+	clocksCtx.fillText("9",-110,10);
+
+		
+	}
+	function drawClock(){
+		
+		//获取本地时间
+		var now = new Date(),
+			h = now.getHours(),
+			m = now.getMinutes(),
+			s = now.getSeconds(),
+			newh = h>12 ? h-12 : h;//因为系统时间是24小时制
+		//时针
+	clocksCtx.save();
+		clocksCtx.rotate((s/3600+m/60+newh)*30*deg);// 把秒和分转成小时
+		clocksCtx.beginPath();
+		
+		clocksCtx.lineCap="round";
+		clocksCtx.strokeStyle="black";
+		clocksCtx.lineWidth=3;
+		clocksCtx.moveTo(0,20);
+		clocksCtx.lineTo(0,-60);
+		clocksCtx.stroke();
+	clocksCtx.restore();
+		//分针
+	clocksCtx.save();
+		clocksCtx.rotate((s/60+m)*6*deg);//分和秒的和 把秒转成分
+		clocksCtx.beginPath();
+		clocksCtx.strokeStyle="black";
+		clocksCtx.lineWidth=2;
+		clocksCtx.moveTo(0,20);
+		clocksCtx.lineTo(0,-80);
+		clocksCtx.stroke();
+	clocksCtx.restore();
+		//秒针
+	clocksCtx.save();
+		clocksCtx.rotate(s*6*deg);
+		clocksCtx.beginPath();
+		clocksCtx.strokeStyle="red";
+		clocksCtx.lineWidth=1;
+		clocksCtx.moveTo(0,20);
+		clocksCtx.lineTo(0,-90);
+		clocksCtx.stroke();
+	clocksCtx.restore();
+
+		//画圆心
+		clocksCtx.beginPath();
+		//径向渐变
+		var radial=clocksCtx.createRadialGradient(0,0,3,0,0,10);
+		radial.addColorStop(0,"#eee");
+		radial.addColorStop(1,"#f06");
+		clocksCtx.fillStyle=radial;//应用
+		clocksCtx.arc(0,0,10,0,360*deg);
+		clocksCtx.fill();
+
+	}
+	setInterval(function(){
+
+		drawDail();
+		drawClock();
+		getTextdate();
+	},1000)
+function getTextdate(){
+
+
+	var tDate=new Date(),
+		hdate=tDate.getHours(),
+		fdate=tDate.getMinutes(),
+		sdate=tDate.getSeconds();
+	
+	clocksCtx.beginPath();
+	clocksCtx.font="50px 微软雅黑";
+	clocksCtx.strokeStyle="#f06";
+	hdate=hdate < 10 ? "0"+hdate :hdate;
+	clocksCtx.strokeText(hdate,-120,240);
+	clocksCtx.strokeText(":",-35,240);	
+	fdate=fdate < 10 ? "0"+fdate :fdate;
+	clocksCtx.beginPath();
+	clocksCtx.strokeStyle="#f06";
+	clocksCtx.strokeText(fdate,-10,240);
+	clocksCtx.strokeText(":",80,240);	
+	sdate=sdate < 10 ? "0"+sdate :sdate;
+	clocksCtx.beginPath();
+	clocksCtx.strokeStyle="#f06";
+	clocksCtx.strokeText(sdate,100,240);	
+}
+	
+/******************日历*/
+function setTime(data){
+var list=document.querySelector("#list");
+var dateY=data.getFullYear(),//当前年
+	dateM=data.getMonth(),//当前月
+	dateD=data.getDate();//当前日  今天的日期
+	document.querySelector("#title").innerHTML=dateY+"年"+(dateM+1)+"月";
+	var date1=new Date(dateY,dateM,1).getDay();//当前月第一天几号
+	var date2=new Date(dateY,dateM+1,0).getDate();//当前月最后一天星期几
+	for(var i=1;i<=42;i++){
+		var date3=new Date(dateY,dateM,i-date1).getDate();//当前月
+		if(i-date1<=0 || i-date1>date2){
+			var lis=document.createElement('li');
+				lis.innerHTML=date3;
+				list.appendChild(lis);
+				lis.style.background="#eee";
+		}else{
+			if(i-date1 == dateD){
+				var lis=document.createElement('li');
+				lis.innerHTML=date3;
+				list.appendChild(lis);
+				lis.style.background="#f06";
+			}else{
+				var lis=document.createElement('li');
+				lis.innerHTML=date3;
+				list.appendChild(lis);
+				lis.style.background="#ccc";
+			}
+		}
+	}
+}
+var wrapBtn=document.querySelector("#wrap");
+wrapBtn.addEventListener('click',function(e){
+	var tar=e.target;
+	if(tar.nodeName=='BUTTON'){
+		list.innerHTML='';
+		
+	var txt=document.querySelector("#title").innerText;
+	var y=txt.split(/[\u4e00-\u9fa5]/)[0]*1,//2017 [2017,17]
+
+		m=txt.split(/[\u4e00-\u9fa5]/)[1]*1-1;//8 因为月份是从0开始
+		console.log(txt)
+				switch(tar.innerText){
+					case "上个月":
+					setTime(new Date(y,m-1))
+					break;
+					case "下个月":
+					setTime(new Date(y,m+1))
+					break;
+					case "上一年":
+					setTime(new Date(y-1,m))
+					break;
+					case "下一年":
+					setTime(new Date(y+1,m))
+					break;
+				}
+	}
+	
+})
+setTime(new Date())
+</script>
